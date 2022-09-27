@@ -18,14 +18,23 @@ w, h = 640 * sz, 480 * sz
 print(f'compiled in {t0:.2} run fractal on size {w, h}={w * h} pix', end='')
 
 # create i/o buffers to match kernel func. params
+c = np.array([0.5, 0], dtype=np.float32)
+r = np.array([-2, 2], dtype=np.float32)
 bsize = m.int_buf([w, h]) # input: size(w,h), center(x,y), range(x,y)
-bcenter = m.float_buf([0.5, 0])
-brange = m.float_buf([-2, 2])
+bcenter = m.float_buf(c)
+brange = m.float_buf(r)
 
 bpix = m.empty_int(w * h) # output
 
 
 while True:
+    # random center and range
+    c = np.random.uniform(-1, 1, 2).astype(np.float32)
+    r = np.random.uniform(-2, 2, 2).astype(np.float32)
+
+    print(f' center={c}, range={r}', end='')
+    m.copy_to_buffer(bcenter, c)
+    m.copy_to_buffer(brange, r)
     m.set_buffers(buffers=(bpix, bsize, bcenter, brange), threads=(w, h))
 
     t = lap()

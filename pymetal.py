@@ -14,14 +14,14 @@ import objc   # Recommended: compile PyObjc from source to get latest version
 import Metal as mtl
 
 
-
-
 log = logging.getLogger(__name__)
 
 class Metal():
     def __init__(self, source, func_name=None):
         self.pm = PyMetal()
         self.pm.opendevice()
+        print("Metal shader initializing: ", source, "func_name: ", func_name)
+        print('devices:', self.pm.lsdev())
         if source.find('.metallib') != -1:
             self.pm.openlibrary_compiled(source)
         elif source.find('.metal') != -1:
@@ -86,6 +86,11 @@ class Metal():
 
     def get_buffer(self, buf, dtype):
         return self.pm.buf2numpy(buf, dtype)
+
+    # methods to copy data to existing buffers
+    def copy_to_buffer(self, buf, data):
+        self.pm.copynumpy2buf(buf, data)
+
 
 
 
@@ -248,12 +253,24 @@ class PyMetal():
     def buf2numpy(self, buf, dtype):
         return numpy.frombuffer(buf.contents().as_buffer(buf.length()), dtype=dtype)
 
+    # methods to copy numpy data to existing buffers
+    def copynumpy2buf(self,buf,data):
+        # make sure data is a numpy array
+        if not isinstance(data, numpy.ndarray):
+            raise Exception("data is not a numpy array")
+        # make sure data is the right size
+        if data.nbytes != buf.length():
+            raise Exception("data is wrong size")
+        self.buf2byte(buf)[:] = data.tobytes()
+
+
     def getqueue(self, **kwargs):
         cqueue = self.dev.newCommandQueue()
         self.setopt(cqueue, kwargs)
         cbuffer = cqueue.commandBuffer()
         self.setopt(cbuffer, kwargs)
         return cqueue, cbuffer
+
 
     def getmtlsize(self, arg):
         if isinstance(arg, int):

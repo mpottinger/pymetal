@@ -37,10 +37,10 @@ def randpc():  # random point(x,y), color, n_points
 # create i/o buffers to match kernel func. params
 # input: points(x,y,color, n_points)
 
-
+bpointcolor = m.buffer(randpc())
+bpix = m.empty_int(w * h)  # output
 while True:
-    bpointcolor = m.buffer(randpc())
-    bpix = m.empty_int(w * h)  # output
+    m.copy_to_buffer(bpointcolor, randpc())
     m.set_buffers(buffers=(bpix, bpointcolor), threads=(w, h))
 
     t = lap()

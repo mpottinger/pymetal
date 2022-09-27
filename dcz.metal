@@ -180,9 +180,9 @@ inline ComplexFloat sinh(ComplexFloat z) { return z.sinh(); }
 inline ComplexFloat cosh(ComplexFloat z) { return z.cosh(); }
 inline ComplexFloat pow(ComplexFloat x, ComplexFloat y) { return x.pow(y); }
 
-// the complex func sin(z)*sin(c(1)/z)
-// sed s/sin(z)*sin(c(1)/z)/"z*z"/g dc.metal > dcz.metal
-ComplexFloat z_func(ComplexFloat z) { return sin(z)*sin(c(1)/z);}
+// the complex func cos(z)/(sin(z*z*z*z-1))
+// sed s/cos(z)/(sin(z*z*z*z-1))/"z*z"/g dc.metal > dcz.metal
+ComplexFloat z_func(ComplexFloat z) { return cos(z)/(sin(z*z*z*z-1));}
 
 
 color HSV2int(float h, const float s, const float v);
