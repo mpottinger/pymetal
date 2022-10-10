@@ -76,7 +76,10 @@ class Metal():
         return self.empty(size * numpy.dtype(numpy.float32).itemsize)
 
     def set_buffers(self, buffers=None, threads=None):  # set of buffers
-        self.cqueue, self.cbuffer = self.pm.getqueue()
+        if self.cqueue is None:
+            print("initializing metal command queue")
+            self.cqueue = self.pm.getqueue()
+        self.cbuffer = self.pm.getCommandBuffer(self.cqueue)
         self.buffer_list = buffers
         self.pm.enqueue_compute(cbuffer=self.cbuffer, func=self.fn, threads=threads, buffers=buffers)
 
@@ -101,7 +104,6 @@ class PyMetal():
 
     def __init__(self):
         self.dev = None
-
     def setopt(self, vv, opts: dict):
         for k, v in opts.items():
             fn = "set" + k + "_"
@@ -257,19 +259,22 @@ class PyMetal():
     def copynumpy2buf(self,buf,data):
         # make sure data is a numpy array
         if not isinstance(data, numpy.ndarray):
-            raise Exception("data is not a numpy array")
+            raise Exception("src data is not a numpy array: %s" % type(data))
         # make sure data is the right size
         if data.nbytes != buf.length():
-            raise Exception("data is wrong size")
+            raise Exception("src data is wrong size: %s != %s" % (data.nbytes, buf.length()))
         self.buf2byte(buf)[:] = data.tobytes()
 
 
     def getqueue(self, **kwargs):
         cqueue = self.dev.newCommandQueue()
         self.setopt(cqueue, kwargs)
+        return cqueue
+
+    def getCommandBuffer(self, cqueue, **kwargs):
         cbuffer = cqueue.commandBuffer()
         self.setopt(cbuffer, kwargs)
-        return cqueue, cbuffer
+        return cbuffer
 
 
     def getmtlsize(self, arg):
