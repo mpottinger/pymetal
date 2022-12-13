@@ -159,7 +159,7 @@ if __name__ == '__main__':
     count = 1
     start_time = time.time()
     rotation = 0.0
-    ret, cap = cv2.VideoCapture(0), cv2.VideoCapture(0)
+
     while(True):
         count += 1
         # Calculate FPS
